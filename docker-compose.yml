@@ -29,7 +29,7 @@ services:
     expose:
       - "8082"
     command: bash -c "
-      npm ci && npm run serve
+      npm ci && npm run dev
       "
     working_dir: /home/node/app
     ports:
@@ -40,7 +40,6 @@ services:
       - redis
     networks:
       - challenge
-
   frontend:
     image: "node:12"
     volumes:
@@ -60,7 +59,6 @@ services:
       - backend_node
     networks:
       - challenge
-
   redis:
     image: redis
     ports:
@@ -79,4 +77,3 @@ networks:
 
 volumes:
   redis:
-

@@ -1,18 +1,31 @@
 const app = require("express")();
+const express = require("express");
+const server = require("http").createServer(app);
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const io = require("socket.io")(server);
 const port = 8082;
 
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
 
+let issueRouter = require("./routes/issue");
+
+app.use(bodyParser.json());
+ 
 app.use(cors());
 
+app.use("/issue", issueRouter);
 
-app.get('/issue/:issue', function(req, res) { 
-    return res.json({"data" : "hola buenos esto es una prueba"})//res.json({issue: parseInt(req.params.issue,10)})
+console.log("hola buenas")
+
+
+server.listen(port)
+
+
+io.on('connection', (newSocket) => {
+    console.log("nueva conexion: ",newSocket.id)
+
 })
 
 
-app.listen(port, () => {
-    console.log(`Backend node listen in port ${port}`);
-});
+//module.exports = {io}

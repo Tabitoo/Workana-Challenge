@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev" : "nodemon -L",
+    "start": "node index.js", 
     "serve": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,6 +15,9 @@
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "ioredis": "^4.27.6",
+    "nodemon": "^2.0.12",
+    "redis": "^3.1.2",
     "socket.io": "^4.1.3"
   }
 }
