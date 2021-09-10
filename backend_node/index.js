@@ -1,31 +1,34 @@
-const app = require("express")();
 const express = require("express");
-const server = require("http").createServer(app);
+const http = require("http");
 const bodyParser = require("body-parser");
-const cors = require("cors");
-const io = require("socket.io")(server);
+var cors = require('cors');
 const port = 8082;
 
-app.use(express.urlencoded({ extended: false }));
+var app = express();
+
+var server = http.createServer(app);
+
+require("./sockets").connect(server);
+/*
+const io = require("socket.io")(server, {
+    cors: {
+        origin: true,
+        methods: ["GET", "POST"]
+    }
+});*/
+
 
 let issueRouter = require("./routes/issue");
 
+
+app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
- 
 app.use(cors());
+
 
 app.use("/issue", issueRouter);
 
 console.log("hola buenas")
 
-
 server.listen(port)
 
-
-io.on('connection', (newSocket) => {
-    console.log("nueva conexion: ",newSocket.id)
-
-})
-
-
-//module.exports = {io}

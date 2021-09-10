@@ -6,16 +6,24 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "dev": "nodemon -L"
+    "dev": "nodemon -L serve"
   },
   "dependencies": {
+    "@vue/shared": "^3.2.4",
     "core-js": "^3.6.5",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
+    "element-plus": "^1.0.2-beta.71",
+    "element-ui": "^2.15.5",
     "nodemon": "^2.0.12",
-    "vue": "^2.6.11"
+    "socket.io-client": "^4.2.0",
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "^4.5.13",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",

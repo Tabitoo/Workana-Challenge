@@ -1,116 +1,34 @@
 <template>
   <div id="app">
-    <h1>♠ Planning Poker ♠</h1>
-    <div id="logo"></div>
-    <h2>Hiring Challenge 👋</h2>
-    <Lobby />
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div>
+    <router-view/>
   </div>
 </template>
 
-<script>
-import Lobby from './components/Lobby.vue'
-
-export default {
-  name: 'App',
-  components: {
-    Lobby
-  }
-}
-</script>
-
 <style>
-body {
-  box-sizing: border-box;
-  font-family: Arial;
-  margin: 0;
-  background: #fff;
+
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  color: #2c3e50;
 }
-#logo {
-  margin: auto;
-  height: 35px;
-  width: 219px;
-  background: url(https://wkncdn.com/newx/assets/build/img/workana-logo-2x.9e13d14c2.png);
-  background-repeat: no-repeat;
-  background-size: cover;
+
+#nav {
+  padding: 30px;
 }
-#container {
-  max-width: 550px;
-  margin: auto;
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
 }
-h1 {
-  margin: 0px;
-  color: #e76f51;
-  text-shadow: 2px 2px 2px #ccc;
+
+#nav a.router-link-exact-active {
+  color: #42b983;
 }
-h2 {
-  margin: auto;
-  color: #e76f51;
-  font-size: 1em;
-  text-shadow: 1px 1px 2px #ccc;
-  text-align: center;
-}
-h3 {
-  color: #2a9d8f;
-  text-shadow: 2px 2px 2px #ccc;
-}
-#voteList {
-  margin: 10px auto;
-  justify-content: center;
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  justify-content: space-around;
-}
-#voteList li {
-  box-sizing: border-box;
-  cursor: pointer;
-  height: 100px;
-  width: 100px;
-  margin: 0;
-  padding: 30px 0;
-  border-radius: 9px;
-  box-shadow: 2px 2px 2px #000;
-  text-shadow: 1px 1px 2px #444;
-  background: #e76f51;
-  color: #fff;
-  margin: 10px;
-  font-size: 30px;
-  transition: background-color 0.3s ease font-size 0.3s ease;
-}
-#voteList li.voted {
-  font-size: 33px;
-  background: #2a9d8f;
-}
-#memberList {
-  list-style: none;
-}
-#memberList li {
-  box-shadow: 2px 2px 2px #444;
-  text-shadow: 1px 1px 1px #444;
-  background: #e76f51;
-  margin: 0.5em 0;
-  padding: 1em;
-  border-radius: 8px;
-  display: flex;
-  align-content: center;
-}
-#memberList li div {
-  width: 50%;
-  display: block;
-  margin: auto;
-}
-#memberList li div.name {
-  color: #FFF;
-}
-#memberList li div.vote {
-  color: #FFF;
-  text-shadow: none;
-  font-size: 1.5em;
-}
-#issue {
-  color: #2a9d8f;
-  width: 75px;
-  text-align: center;
-}
+
 </style>
