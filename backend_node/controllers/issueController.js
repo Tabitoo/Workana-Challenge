@@ -1,5 +1,7 @@
 const Redis = require("ioredis");
-const redis = new Redis(6379, "172.17.0.1")
+const { Socket } = require("socket.io");
+const redis = new Redis(6379, "172.17.0.1");
+const jwt = require("jsonwebtoken");
 const {getSocket,getIo, getRoom} = require('../sockets');
 
 module.exports = {
@@ -14,14 +16,15 @@ module.exports = {
                 //let sets = await redis.sadd("issueID", id);
 
                 let issueObject = await redis.get("issue:" + id);
-       
+                
+
                 if(issueObject == null){
 
                     issueObject = {
                         id: id,
                         status : "joining",
                         members : [
-                            {name : body.name, rol : body.rol}
+                            {name : body.name, rol : body.rol, status : "joining", id: 1, vote: false}
                         ]
                     }
 
@@ -41,7 +44,7 @@ module.exports = {
                         
                     }
 
-                    issueObject.members.push({name : body.name, rol : body.rol, status : "joining"});
+                    issueObject.members.push({name : body.name, rol : body.rol, status : "joining", id: issueObject.members.length + 1, vote: false});
 
                     await redis.set("issue:" + id, JSON.stringify(issueObject));
 
@@ -58,71 +61,27 @@ module.exports = {
         
     },
     getIssue: (req,res) => {
-        let issue = req.params.id;
+        //let issue = req.params.id;
 
         let getId = async (id) => {
 
             try {
+
                 
-                let emitplease;
 
                 let issueObject = await redis.get("issue:" + id);
                 
                 issueObject = JSON.parse(issueObject);
 
-
-
-                
-
-
-               /* if(getRoom() != null) {
-
-
-
-                   // getIo().to(id).emit("server:msg2", "hola buenas");
-
-
-                    //let emisor = emitRoom(id);
-
-                    //emisor.emit("server:issue", issueObject);
- 
-                    //console.log(getIo());
-                    console.log("Rooms?:");
-                    console.log(getSocket().rooms);
-                    //emitplease = getIo();
-
-
-                }*/
-                
-                /*
-                if(getSocket()) {
-
-                    //No esta enviando los eventos desde aca.
-                    //Mañana recibar como se exporta la variable io,
-                    //asignala de vuelta cuando se genera la conexion del socket
+                if(getSocket()){
                     
-                    //emitRoom(id, issueObject);
-
-                    /*getIo().to(id).emit("server:issue", issueObject);
-                    console.log(getIo());
-                    console.log("Rooms?:");
-                    console.log(getSocket().rooms);
-                    emitplease = getIo();
-
-                    emitplease.to(id).emit(issueObject);
-
-                }*/
-
-                /*
-                if (getRoom()) {
-                    console.log("------")
-                    console.log("socket conectado a estos rooms desde issueController:", getSocket().rooms);
-                    console.log("En teoria esta pasando dos veces por el evento client:room")
-                    console.log("------")
-                    //getRoom().emit("server:list", issueObject, id);
-
+                    console.log("evento desde client:issue")
+                    getIo().emit("server:msg","esto es un mensaje, que ande porfavor!!");
+                    getSocket().on("client:mensaje", (data) => console.log(data))
+                    getIo().to(Number(id)).emit("server:issue", issueObject);
+                    
                 }
-                */
+
                 return res.status(200).json({
                     data : issueObject
                 })
@@ -132,15 +91,71 @@ module.exports = {
             
         }
 
-        getId(issue);
+        getId(req.params.id);
     },
     issuePrueba: (req,res) => {
         return res.json({
             data : "hola buenas esto es una prueba"
         })
     },
-    issueVoting : (req,res) => {
+    issueVote : (req,res) => {
+
+        let id = req.params.issue;
+        let body = req.body;
+
+        console.log(id)
+
+        let issueStatus = async (id,body) => {
+
+            try {
+
+                let issueObject = await redis.get(`issue:${id}`);
+                issueObject = JSON.parse(issueObject);
+
+                if(body.rol === "scrumMaster") {
+                        
+                    issueObject.status = body.status;
+
+                    await redis.set(`issue:${id}`, JSON.stringify(issueObject));
+
+                    if(getSocket()) {
+
+                        getIo().to(Number(id)).emit("server:issueStatus", issueObject.status);
+
+                    }
+
+                } else {
+                    let user = body.user;
+
+                    let index = issueObject.members.findIndex(usuario => usuario.id == user.id);
+
+                    issueObject.members[index] = user;
+
+                    await redis.set(`issue:${id}`, JSON.stringify(issueObject));
+
+                    if(getSocket()) {
+
+                        getIo().to(Number(id)).emit("server:issueVote", issueObject.members);
+
+                    }
+
+
+                }
+                    
+
+                return res.status(200).json({
+                    status : 200,
+                    data : issueObject
+                })
+                
+            } catch (error) {
+                console.log(error);
+            }
+
+        }
+
+        issueStatus(id,body);
+       
 
     }
 } 
-

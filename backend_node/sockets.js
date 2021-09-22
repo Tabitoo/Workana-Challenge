@@ -41,12 +41,12 @@ const connect = (server) => {
             io.to(data.id).emit("server:msg", `mensaje desde el room:${data.id}`);
 
         })
-
+/*
         newSocket.on("client:issue", (data) => {
             console.log(data.data.id)
             io.to(id).emit("server:issue", data.data);
         })
-  
+  */
     })
 }
 

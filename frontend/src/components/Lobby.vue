@@ -16,7 +16,7 @@
         <li :key="index" v-for="(member, index) in members">
           <div class="status">{{member.rol ? '✅' : ''}}</div>
           <div class="name">{{member.name}}</div>
-          <div class="vote">{{member.rol ? member.rol : '-'}}</div>
+          <div class="vote">{{member.vote ? member.vote : '-'}}</div>
         </li>
       </ul>
     </div>
@@ -39,16 +39,14 @@
 
 import io from 'socket.io-client'
 
-
-
 export default {
   name: 'Lobby',
   data() {
     return {
-      issue: 234,
+      issue: null,
       validVotes: [1,2,3,5,8,13,20,40,'?'],
       members: [
-        {name: 'Julian (you)', vote: false},
+        {name: 'Julian', vote: false},
         {name: 'Flor', vote: false},
         {name: 'Gino', vote: false}
       ],
@@ -56,7 +54,9 @@ export default {
         php: null,
         node: null,
       },
-      socket: null
+      socket: null,
+      user: null,
+      status: null
     };
   },
   computed: {
@@ -64,66 +64,139 @@ export default {
   },
   async created() {
 
+    this.issue = this.$route.params
+
     this.socket = io("http://localhost:8082");
 
+    
 
     this.socket.emit("client:room", this.$route.params);
-
     
     let id = this.$route.params.id;
     let issueObject = await fetch(`http://localhost:8082/issue/${id}`);
     issueObject = await issueObject.json();
 
-    this.socket.emit("client:issue", issueObject);
-
     this.members = issueObject.data.members;
 
-    
+    this.status = issueObject.data.status;
 
-    
-    
+    this.user = this.members[this.members.length - 1];
+
+    this.user.name = this.user.name + " (you)";
+
+    this.members.pop();
+
+    this.members.unshift(this.user);
+
   },
   async mounted() {
 
     this.socket.on("server:issue", (data) => {
       console.log("Hola esta es la data de server:issue");
       console.log(data)
-      this.members = data.members
+      this.members.push(data.members[data.members.length - 1]);
     });
 
-/*
-    this.socket.on("server:issue", (data) => {
-      
-      console.log("Evento posiblemente recibo desde un room");
-      console.log("------")
-      console.log(data);
-      console.log("------")
-      this.members = data.members;
+    this.socket.on("server:issueStatus", (data) => {
+      this.status = data;
+      console.log(this.status);
 
     })
-  */
+
+    this.socket.on("server:issueVote", (data) => {
+      let i = 0;
+      data.forEach(member => {
+        if(member.vote != false){
+          i++
+          console.log(i)
+        }
+      });
+
+      if(i === data.length){
+
+        data.forEach(member => {
+          let player = this.members.findIndex(user => user.id == member.id);
+
+          this.members[player].vote = member.vote
+        })
+        
+/*
+        for(let x = 0; i <= data.length; x++){
 
 
+          let user = this.members
 
-    this.socket.on("server:msg", (data) => {
-      console.log(data)
-    });
 
-    this.socket.on("server:msg2", (data) => {
-      console.log(data);
+          if(data[x].id == this.members[0].id) {
+            continue
+          }
+
+          this.members[x].vote = data[x].vote
+        }
+        
+  */      
+        console.log(data);
+      }
+
     })
 
     this.demoResponses();
     
   },
   methods: {
-    emitVote(vote) {
-    this.socket.emit("client:vote", {vote : vote} )
+    async emitVote(vote) {
+
+      let dataUser = this.user;
+      let id = this.$route.params.id;
+
+      //this.socket.emit("client:vote", {vote : vote, player : this.user} );
+      //this.socket.emit("client:mensaje", "a ver si escucha desde controller")
+
+      try {
+        
       if (vote === this.you.vote) {
+
         this.you.vote = false;
+
+        let objecto = {
+          rol : this.user.rol,
+          user: dataUser,
+          vote: this.you.vote
+        }
+
+        await fetch(`http://localhost:8082/issue/${id}/vote`, {
+          method: "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body : JSON.stringify(objecto)
+        })
+
         return;
       }
       this.you.vote = vote;
+
+      
+        let objecto = {
+          rol : this.user.rol,
+          user: dataUser,
+          vote: this.you.vote
+        }
+
+        await fetch(`http://localhost:8082/issue/${id}/vote`, {
+          method: "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body : JSON.stringify(objecto)
+        })
+        
+      } catch (error) {
+        console.log(error)
+      }
+
     },
     async demoResponses() {
       /*const resPhp = await fetch('http://localhost:8081/issue/232');

@@ -54,9 +54,7 @@ services:
       - 8080:8080
     links:
       - backend
-    depends_on:
-      - backend
-      - backend_node
+   
     networks:
       - challenge
   redis:

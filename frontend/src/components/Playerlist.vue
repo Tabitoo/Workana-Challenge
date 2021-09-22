@@ -10,7 +10,7 @@
                         height="300"
                         style="width: 100%">
                         <el-table-column
-                        prop="date"
+                        prop="id"
                         label="Fecha"
                         width="180">
                         </el-table-column>
@@ -20,15 +20,15 @@
                         width="180">
                         </el-table-column>
                         <el-table-column
-                        prop="address"
+                        prop="rol"
                         label="Dirección">
                         </el-table-column>
                         <el-table-column
-                        prop="address"
+                        prop="vote"
                         label="Voto">
                         </el-table-column>
                     </el-table>
-                    <el-button size="medium">Cerrar sala e inicar votos</el-button>
+                    <el-button size="medium" @click="submit">Cerrar sala e inicar votos</el-button>
 
                     </el-col>
                     <el-col :span="4"><div class="grid-content"></div></el-col>
@@ -43,6 +43,10 @@
 </template>
 
 <script>
+
+import io from 'socket.io-client'
+
+
 export default {
     name: 'Playerlist',
     data () {
@@ -76,7 +80,58 @@ export default {
           name: 'Tom',
           address: 'No. 189, Grove St, Los Angeles'
         }],
+        socket : null,
+        status: null
         }
+    },
+    async created() {
+
+      this.socket = io("http://localhost:8082");
+
+
+      this.socket.emit("client:room", this.$route.params);
+
+      let id = this.$route.params.id;
+      let issueObject = await fetch(`http://localhost:8082/issue/${id}`);
+      issueObject = await issueObject.json();
+
+      this.tableData = issueObject.data.members;
+
+    },
+    async mounted() {
+      this.socket.on("server:issue", (data) => {
+        console.log("Hola esta es la data de server:issue");
+        console.log(data)
+        this.tableData.push(data.members[data.members.length - 1]);
+    });
+    },
+    methods: {
+      async submit() {
+
+        let id = this.$route.params.id;
+        let data = JSON.parse(sessionStorage.getItem("user"));
+
+
+        let objecto = {
+          status : "voting",
+          rol : data.rol
+        }
+
+        let issueObject = await fetch(`http://localhost:8082/issue/${id}/vote`, {
+          method: "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body : JSON.stringify(objecto)
+        })
+        issueObject = await issueObject.json();
+        this.status = issueObject.data.status;
+        console.log(issueObject);
+        console.log(this.status);
+
+
+      }
     }
 
 }

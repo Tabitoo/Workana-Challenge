@@ -75,7 +75,15 @@ export default {
                     body: JSON.stringify(objeto)
                 })
 
-                console.log(response);
+                response = await response.json();
+
+                console.log(response.data.members)
+                
+                let user = response.data.members[response.data.members.length - 1];
+
+                console.log(user);
+
+                sessionStorage.setItem(`user`,  JSON.stringify(user));
 
                 this.$router.push({name: 'About', params : {id : this.num}});
                 
