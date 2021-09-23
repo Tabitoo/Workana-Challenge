@@ -1,5 +1,6 @@
 <template>
   <div id="container">
+    <h2>Sala Estatus : {{ status }}</h2>
     <div class="vote">
       <ul id="voteList">
         <li v-for="vote in validVotes"
@@ -12,6 +13,7 @@
       <h3>
         Voting issue #<input id="issue" type="number" v-model="issue" /> • Connected {{members.length}}
       </h3>
+      <h2 v-if="errorMessage"> {{ message }}</h2>
       <ul id="memberList">
         <li :key="index" v-for="(member, index) in members">
           <div class="status">{{member.rol ? '✅' : ''}}</div>
@@ -56,7 +58,9 @@ export default {
       },
       socket: null,
       user: null,
-      status: null
+      status: null,
+      errorMessage: false,
+      message: ""
     };
   },
   computed: {
@@ -67,8 +71,6 @@ export default {
     this.issue = this.$route.params
 
     this.socket = io("http://localhost:8082");
-
-    
 
     this.socket.emit("client:room", this.$route.params);
     
@@ -99,6 +101,7 @@ export default {
 
     this.socket.on("server:issueStatus", (data) => {
       this.status = data;
+      this.errorMessage = false
       console.log(this.status);
 
     })
@@ -106,35 +109,20 @@ export default {
     this.socket.on("server:issueVote", (data) => {
       let i = 0;
       data.forEach(member => {
-        if(member.vote != false){
+        if(member.vote != false && member.rol != "scrumMaster"){
           i++
           console.log(i)
         }
       });
 
-      if(i === data.length){
+      if(i === data.length - 1){
 
         data.forEach(member => {
           let player = this.members.findIndex(user => user.id == member.id);
 
           this.members[player].vote = member.vote
         })
-        
-/*
-        for(let x = 0; i <= data.length; x++){
-
-
-          let user = this.members
-
-
-          if(data[x].id == this.members[0].id) {
-            continue
-          }
-
-          this.members[x].vote = data[x].vote
-        }
-        
-  */      
+          
         console.log(data);
       }
 
@@ -149,54 +137,51 @@ export default {
       let dataUser = this.user;
       let id = this.$route.params.id;
 
-      //this.socket.emit("client:vote", {vote : vote, player : this.user} );
-      //this.socket.emit("client:mensaje", "a ver si escucha desde controller")
-
-      try {
+      if (this.status == "voting") {
+        try {
         
-      if (vote === this.you.vote) {
+          if (this.you.vote != false) {
 
-        this.you.vote = false;
+            this.errorMessage = true;
+            this.message = "Ya votaste una vez, imposible cambiar el valor"
+            
 
-        let objecto = {
-          rol : this.user.rol,
-          user: dataUser,
-          vote: this.you.vote
+            return;
+          }
+          this.you.vote = vote;
+
+        
+          let objecto = {
+            rol : this.user.rol,
+            user: dataUser,
+            vote: this.you.vote
+          }
+
+          await fetch(`http://localhost:8082/issue/${id}/vote`, {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body : JSON.stringify(objecto)
+          })
+
+          
+          
+        } catch (error) {
+          console.log(error)
         }
 
-        await fetch(`http://localhost:8082/issue/${id}/vote`, {
-          method: "POST",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body : JSON.stringify(objecto)
-        })
-
-        return;
-      }
-      this.you.vote = vote;
-
-      
-        let objecto = {
-          rol : this.user.rol,
-          user: dataUser,
-          vote: this.you.vote
-        }
-
-        await fetch(`http://localhost:8082/issue/${id}/vote`, {
-          method: "POST",
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body : JSON.stringify(objecto)
-        })
         
-      } catch (error) {
-        console.log(error)
+      } else {
+
+        this.errorMessage = true;
+        this.message = "Votación disponible cuando la sala cambie su estatus"
+        console.log('El estado de la sala no es "voting", todavia no se puede votar')
+        
       }
 
+     
     },
     async demoResponses() {
       /*const resPhp = await fetch('http://localhost:8081/issue/232');

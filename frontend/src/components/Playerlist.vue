@@ -103,7 +103,29 @@ export default {
         console.log("Hola esta es la data de server:issue");
         console.log(data)
         this.tableData.push(data.members[data.members.length - 1]);
-    });
+      });
+
+        this.socket.on("server:issueVote", (data) => {
+        let i = 0;
+        data.forEach(member => {
+          if(member.vote != false && member.rol != "scrumMaster"){
+            i++
+            console.log(i)
+          }
+        });
+
+        if(i === data.length - 1){
+
+          data.forEach(member => {
+            let player = this.tableData.findIndex(user => user.id == member.id);
+
+            this.tableData[player].vote = member.vote
+          })
+            
+          console.log(data);
+        }
+
+      })
     },
     methods: {
       async submit() {

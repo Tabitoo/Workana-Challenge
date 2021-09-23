@@ -39,9 +39,19 @@ module.exports = {
                     if(body.rol == "scrumMaster"){
                         
                         if(issueObject.members.find(member => member.rol == "scrumMaster")){
-                            return res.json({data : "ya se encuentra un scrum master"})
+                            return res.json({
+                                status : "error",
+                                data : "ya se encuentra un scrum master"
+                            })
                         }
                         
+                    }
+
+                    if(issueObject.status != "joining") {
+                        return res.json({
+                            status : "error",
+                            data : "error al unirse a la sala, la votacion ya inicio"
+                        })
                     }
 
                     issueObject.members.push({name : body.name, rol : body.rol, status : "joining", id: issueObject.members.length + 1, vote: false});

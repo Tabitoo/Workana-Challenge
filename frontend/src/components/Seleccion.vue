@@ -9,6 +9,7 @@
                         <article class="title">
                             <h2>Seleccione un rol y unase a una sala</h2>
                         </article>
+                        <h2 v-if="errorMessage"> {{ message }}</h2>
                         <form action="" class="formulario">
                             <el-input placeholder="Nombre" v-model="input" size="medium"></el-input>
                             <el-select v-model="rol">
@@ -49,7 +50,9 @@ export default {
             value: 'votante',
             label: 'Votante'
             }],
-            rol: ''
+            rol: '',
+            errorMessage : false,
+            message : ""
             }
     },
     methods: {
@@ -65,7 +68,7 @@ export default {
                     name: this.input,
                     sala: this.num
                 }
-                console.log(objeto)
+                ///console.log(objeto)
                 let response = await fetch(`http://localhost:8082/issue/${this.num}/join`, {
                     method: 'POST',
                       headers: {
@@ -77,16 +80,29 @@ export default {
 
                 response = await response.json();
 
-                console.log(response.data.members)
-                
-                let user = response.data.members[response.data.members.length - 1];
+                console.log(response)
 
-                console.log(user);
 
-                sessionStorage.setItem(`user`,  JSON.stringify(user));
+                if(response.status === "error"){
 
-                this.$router.push({name: 'About', params : {id : this.num}});
-                
+                    this.errorMessage = true;
+                    this.message = response.data
+                    return
+
+                } else {
+                        
+                    console.log(response.data.members)
+                    
+                    let user = response.data.members[response.data.members.length - 1];
+
+                    console.log(user);
+
+                    sessionStorage.setItem(`user`,  JSON.stringify(user));
+
+                    this.$router.push({name: 'About', params : {id : this.num}});
+
+                }
+
             } catch (error) {
                 console.log(error)
             }
