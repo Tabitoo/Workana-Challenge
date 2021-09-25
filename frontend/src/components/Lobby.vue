@@ -128,6 +128,22 @@ export default {
 
     })
 
+    this.socket.on("server:restarIssue", (data) => {
+  
+        data.forEach(member => {
+          let player = this.members.findIndex(user => user.id == member.id);
+
+          this.members[player].vote = member.vote
+        })
+
+    })
+
+    this.socket.on("client:disconnect", () => {
+      this.socket.disconnect();
+
+      this.$router.push({name: 'Home'});
+    })
+
     this.demoResponses();
     
   },

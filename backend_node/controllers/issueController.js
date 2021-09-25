@@ -165,7 +165,90 @@ module.exports = {
         }
 
         issueStatus(id,body);
-       
 
+    },
+    restarIssue : (req, res) => {
+
+        let issue = req.params.issue;
+        let body = req.body;
+
+        let restarVote = async (id, body) => {
+
+            console.log(body);
+
+            let issueObject = await redis.get(`issue:${id}`);
+            issueObject = JSON.parse(issueObject);
+
+            issueObject.members.forEach(member => {
+
+                member.vote = false;
+                
+            });
+
+            let response = await redis.set(`issue:${id}`, JSON.stringify(issueObject));
+
+            if(response == "OK") {
+                getIo().to(Number(id)).emit("server:restarIssue", issueObject.members);
+
+                return res.json({
+                    status : 200,
+                    data : "ok"
+                })
+            } 
+
+        }
+
+        restarVote(issue,body);
+
+    },
+
+    deleteIssue: (req,res) => {
+        let issue = req.params.issue;
+        let body = req.body;
+
+        let roomDelete = async (body,issue) => {
+            try {
+                    
+                let issueObject = await redis.get(`issue:${issue}`);
+
+                issueObject = JSON.parse(issueObject);
+
+                let user = issueObject.members.find(user => user.id == body.id);
+
+                if(user.rol == "scrumMaster"){
+
+                    let remove = await redis.del(`issue:${issue}`);
+
+                    if(remove != 0){
+
+                        getIo().to(Number(issue)).emit("client:disconnect");
+
+                        return res.status(200).json({
+                            data : "ok"
+                        })
+
+                    }
+
+                } else {
+                    return res.json({
+                        data : "error",
+                        msg : "Es necesario ser scrumMaster para eliminar la sala"
+                    })
+                }
+
+                
+            } catch (error) {
+
+                console.log(error)
+
+                
+            }
+
+
+
+
+        }
+
+        roomDelete(body,issue);
     }
 } 

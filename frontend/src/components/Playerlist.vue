@@ -29,6 +29,8 @@
                         </el-table-column>
                     </el-table>
                     <el-button size="medium" @click="submit">Cerrar sala e inicar votos</el-button>
+                    <el-button size="medium" @click="removeRoom">Eliminar sala y volver a la pagina principal</el-button>
+                    <el-button size="medium" @click="restarRoom">Restar Votos</el-button>
 
                     </el-col>
                     <el-col :span="4"><div class="grid-content"></div></el-col>
@@ -105,7 +107,7 @@ export default {
         this.tableData.push(data.members[data.members.length - 1]);
       });
 
-        this.socket.on("server:issueVote", (data) => {
+      this.socket.on("server:issueVote", (data) => {
         let i = 0;
         data.forEach(member => {
           if(member.vote != false && member.rol != "scrumMaster"){
@@ -126,6 +128,17 @@ export default {
         }
 
       })
+
+      this.socket.on("server:restarIssue", (data) => {
+  
+        data.forEach(member => {
+          let player = this.tableData.findIndex(user => user.id == member.id);
+
+          this.tableData[player].vote = member.vote
+        })
+
+      })
+
     },
     methods: {
       async submit() {
@@ -152,6 +165,49 @@ export default {
         console.log(issueObject);
         console.log(this.status);
 
+      },
+      async removeRoom() {
+        let id = this.$route.params.id;
+        let data = JSON.parse(sessionStorage.getItem("user"));
+
+        
+        let response = await fetch(`http://localhost:8082/issue/${id}/delete`, {
+          method: "DELETE",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body : JSON.stringify(data)
+        })
+        response = await response.json();
+
+        if(response.data == "ok"){
+
+          this.socket.disconnect();
+
+          console.log(response);
+
+          this.$router.push({name: 'Home'});
+
+
+        }
+      },
+      async restarRoom() {
+        let id = this.$route.params.id;
+        let data = JSON.parse(sessionStorage.getItem("user"));
+
+        
+        let response = await fetch(`http://localhost:8082/issue/${id}/restar`, {
+          method: "PUT",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body : JSON.stringify(data)
+        })
+        response = await response.json();
+
+        console.log(response);
 
       }
     }
