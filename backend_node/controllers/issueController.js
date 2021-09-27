@@ -16,6 +16,7 @@ module.exports = {
                 //let sets = await redis.sadd("issueID", id);
 
                 let issueObject = await redis.get("issue:" + id);
+                const token = null;
                 
 
                 if(issueObject == null){
@@ -30,7 +31,9 @@ module.exports = {
 
                     await redis.set("issue:" + id, JSON.stringify(issueObject));
 
-                    return await res.status(200).json({data : issueObject});
+                    token = jwt.sign({id : issueObject.members[0].id}, "MySecret", {expiresIn : 60 * 60 * 24});
+
+                    //return await res.status(200).json({data : issueObject, token : token});
                     
                 }else {
 
@@ -54,13 +57,26 @@ module.exports = {
                         })
                     }
 
-                    issueObject.members.push({name : body.name, rol : body.rol, status : "joining", id: issueObject.members.length + 1, vote: false});
+                    let user = {
+
+                        name : body.name, 
+                        rol : body.rol, 
+                        status : "joining", 
+                        id: issueObject.members.length + 1, 
+                        vote: false
+                    }
+
+                    issueObject.members.push(user);
 
                     await redis.set("issue:" + id, JSON.stringify(issueObject));
 
-                    return res.json({data : issueObject});
+                    token = jwt.sign({id : user.id}, "MySecret", {expiresIn : 60 * 60 * 24});
+
+                    //return res.json({data : issueObject, token : token});
 
                 }
+
+                return await res.status(200).json({data : issueObject, token : token});
             } catch (error) {
                 console.log(error)
             }

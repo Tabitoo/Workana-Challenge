@@ -47,11 +47,7 @@ export default {
     return {
       issue: null,
       validVotes: [1,2,3,5,8,13,20,40,'?'],
-      members: [
-        {name: 'Julian', vote: false},
-        {name: 'Flor', vote: false},
-        {name: 'Gino', vote: false}
-      ],
+      members: [],
       responsesDemo: {
         php: null,
         node: null,
@@ -206,7 +202,6 @@ export default {
   }
 }
 </script>
-
 
 <style scoped>
 

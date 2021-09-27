@@ -10,7 +10,7 @@
                             <h2>Seleccione un rol y unase a una sala</h2>
                         </article>
                         <h2 v-if="errorMessage"> {{ message }}</h2>
-                        <form action="" class="formulario">
+                        <form action="" class="formulario" >
                             <el-input placeholder="Nombre" v-model="input" size="medium"></el-input>
                             <el-select v-model="rol">
                                 <el-option popper-class="fondo"
@@ -23,7 +23,7 @@
                         
                             <el-input-number v-model="num" @change="handleChange" :min="1" popper-class="fondo"></el-input-number>
 
-                            <el-button size="medium" @click="onSubmit">Enviar</el-button>
+                            <el-button size="medium" @click.prevent="onSubmit">Enviar</el-button>
                             
                         </form>
                     </div>
@@ -68,7 +68,29 @@ export default {
                     name: this.input,
                     sala: this.num
                 }
-                ///console.log(objeto)
+
+                switch (true) {
+                    case objeto.rol == "":
+                        
+                        this.errorMessage = true;
+                        this.message = "campo rol vacio"
+                        return;
+
+                    case objeto.name == "":
+
+                        this.errorMessage = true;
+                        this.message = "campo nombre vacio"
+                        return
+                    case Number.isNaN(objeto.sala):
+                        this.errorMessage = true;
+                        this.message = "Solo se aceptan numeros"
+                        return
+                        
+                    default:
+                        break;
+                }
+
+
                 let response = await fetch(`http://localhost:8082/issue/${this.num}/join`, {
                     method: 'POST',
                       headers: {
