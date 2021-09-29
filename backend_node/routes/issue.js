@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const {issueJoin, issuePrueba, getIssue, issueVote, restarIssue,deleteIssue} = require("../controllers/issueController");
+const {issueJoin, getIssue, issueVote, restarIssue,deleteIssue} = require("../controllers/issueController");
 const tokenCheck = require('../middlewares/authToken');
 
 
 
-router.get("/prueba", issuePrueba);
 router.get("/:issue", tokenCheck, getIssue);
 router.post('/:issue/join', issueJoin);
 router.post("/:issue/vote", tokenCheck, issueVote);

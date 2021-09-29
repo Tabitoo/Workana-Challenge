@@ -27,24 +27,87 @@ const connect = (server) => {
             console.log(data)
         })
 
-        newSocket.on("client:room", (data) => {
-            
-            newSocket.join(data.id);
-            id = data.id;
-            
-            console.log("------");
-            console.log("socket conectado a estos rooms desde sockets.js:", socket.rooms);
-            console.log("------");
-             
-            //room = io.to(data.id);
-            
+        newSocket.on("client:room", async (data, user) => {
+            try {
 
-            io.to(data.id).emit("server:msg", `mensaje desde el room:${data.id}`);
+                console.log("user desde client:room")
+                console.log("------")
+                console.log(user)
+                console.log("------")
+                newSocket.join(data.id);
+                id = data.id;
 
+                let issueObject = await getRedis().get(`issue:${id}`);
+                if (issueObject != null) {
+
+                    issueObject = JSON.parse(issueObject);
+
+                    user["socket"] = newSocket.id;
+
+                    let index = issueObject.members.findIndex(member => member.id == user.id);
+
+                    issueObject.members[index] = user;
+
+                    await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
+
+                    console.log("------");
+                    console.log("socket conectado a estos rooms desde sockets.js:", socket.rooms);
+                    console.log("------");
+                    
+                    //room = io.to(data.id);
+                    
+
+                    io.to(data.id).emit("server:msg", `mensaje desde el room:${data.id}`);
+                    
+                        
+                }
+                
+            } catch (error) {
+                console.log(error);
+            }
+            
         })
 
 
-        newSocket.on("disconnect", () => {
+        newSocket.on("disconnecting", async (reason) => {
+
+            if(reason === "transport close"){
+
+                try {
+                        
+                    for (const room of newSocket.rooms) {
+                        if (room != newSocket.id) {
+
+                            let issueObject = await getRedis().get(`issue:${room}`);
+
+                            if (issueObject != undefined) {
+                                    
+                                issueObject = JSON.parse(issueObject);
+
+                                let index = issueObject.members.findIndex(member => member.socket == newSocket.id);
+
+                                let userId = issueObject.members[index].id;
+
+                                issueObject.members.splice(index,1);
+
+                                let vef = await getRedis().set(`issue:${room}`, JSON.stringify(issueObject));
+
+                                if(vef == "OK") {
+                                    io.to(room).emit("server:exitUser", userId);
+                                } else {
+                                    console.log("Error al almacenar el issue:", vef);
+                                } 
+                            }
+                        }
+                        
+                    }
+                    
+                } catch (error) {
+
+                    console.log(error);
+                    
+                }
+            }
 
             console.log("socket desconectado");
             console.log("rooms:", newSocket.rooms.size);
@@ -60,12 +123,9 @@ const getSocket = () => socket;
 const getIo = () =>  ioSocket;
 const getRoom = () => room;
 
-
 module.exports = {
-    
     connect,
     getSocket,
     getIo,
-    getRoom
-   
+    getRoom   
 }

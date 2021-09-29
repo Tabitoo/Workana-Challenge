@@ -66,7 +66,7 @@ export default {
       this.user = JSON.parse(sessionStorage.getItem("user"));
 
 
-      this.socket.emit("client:room", this.$route.params);
+      this.socket.emit("client:room", this.$route.params, this.user);
 
       let id = this.$route.params.id;
       let issueObject = await fetch(`http://localhost:8082/issue/${id}`, {
@@ -115,6 +115,16 @@ export default {
 
           this.tableData[player].vote = member.vote
         })
+
+      })
+
+        
+      this.socket.on("server:exitUser", (data) => {
+
+        let index = this.tableData.findIndex(member => member.id == data);
+
+        this.tableData.splice(index,1);
+
 
       })
 

@@ -10,6 +10,7 @@ module.exports = async (req,res,next) => {
 
         return res.json({
             status : 400,
+            error : "Bad Request",
             msg : "token no enviado"
         })
 
@@ -20,24 +21,43 @@ module.exports = async (req,res,next) => {
         const verifyToken = jwt.verify(token,"MySecret");
 
         let issueObject = await getRedis().get(`issue:${req.params.issue}`);
-        issueObject = await JSON.parse(issueObject)
 
-        let user = issueObject.members.find(member => member.id == verifyToken.id);
+        if(issueObject == null) {
 
-        if(user != undefined){
-            next();
-        }else {
-            return res.json({
-                status : "error",
-                data : "Usario no encontrado"
+            return res.status(404).json({
+                status : 404,
+                error : "Not Found",
+                msg : "issue no encontrado"
             })
+
+        } else {
+
+            issueObject = await JSON.parse(issueObject)
+
+
+            let user = issueObject.members.find(member => member.id == verifyToken.id);
+    
+            if(user != undefined){
+                next();
+            }else {
+                return res.status(404).json({
+                    status : 404,
+                    error : "Not Found",
+                    msg : "Usario no encontrado"
+                })
+            }
+
         }
+        
+
+      
     } catch (error) {
         console.log(error);
         if(!error.expiredAt){
             return res.json({
                 meta : {
-                    status : 401,
+                    status : 400,
+                    error : "Bad Request",
                     msg : "Token invalido"
                 }
             })
@@ -45,6 +65,7 @@ module.exports = async (req,res,next) => {
         res.status(400).json({
             meta : {
                 status : 401,
+                error : "Unauthorized",
                 msg : "Token expirado"
             }
         })

@@ -119,7 +119,7 @@ export default {
 
                     user["token"] = response.token;
 
-                    console.log(user);
+                    //console.log(user);
 
                     sessionStorage.setItem(`user`,  JSON.stringify(user));
 
