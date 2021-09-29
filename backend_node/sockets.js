@@ -1,4 +1,5 @@
 const socketIo = require('socket.io'); 
+const {getRedis} = require("./redis")
 
 let socket;
 let ioSocket;
@@ -42,7 +43,6 @@ const connect = (server) => {
 
         })
 
-        
 
         newSocket.on("disconnect", () => {
 

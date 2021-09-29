@@ -60,7 +60,7 @@ export default {
     };
   },
   computed: {
-    you() { return this.members[0] },
+    you() { return this.user },
   },
   async created() {
 
@@ -68,17 +68,21 @@ export default {
 
     this.socket = io("http://localhost:8082");
 
+    this.user = JSON.parse(sessionStorage.getItem("user"));
+
     this.socket.emit("client:room", this.$route.params);
     
     let id = this.$route.params.id;
-    let issueObject = await fetch(`http://localhost:8082/issue/${id}`);
+    let issueObject = await fetch(`http://localhost:8082/issue/${id}`, {
+      headers : {
+        token : this.user.token
+      }
+    });
     issueObject = await issueObject.json();
 
     this.members = issueObject.data.members;
 
     this.status = issueObject.data.status;
-
-    this.user = this.members[this.members.length - 1];
 
     this.user.name = this.user.name + " (you)";
 
@@ -146,7 +150,6 @@ export default {
   methods: {
     async emitVote(vote) {
 
-      let dataUser = this.user;
       let id = this.$route.params.id;
 
       if (this.status == "voting") {
@@ -165,13 +168,14 @@ export default {
         
           let objecto = {
             rol : this.user.rol,
-            user: dataUser,
-            vote: this.you.vote
+            user: this.user,
+            
           }
 
           await fetch(`http://localhost:8082/issue/${id}/vote`, {
             method: "POST",
             headers: {
+              token : this.user.token,
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },

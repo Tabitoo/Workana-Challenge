@@ -113,9 +113,11 @@ export default {
 
                 } else {
                         
-                    console.log(response.data.members)
                     
-                    let user = response.data.members[response.data.members.length - 1];
+                    
+                    let user = response.data;
+
+                    user["token"] = response.token;
 
                     console.log(user);
 

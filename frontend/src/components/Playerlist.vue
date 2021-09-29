@@ -55,18 +55,25 @@ export default {
         return {
         tableData: [],
         socket : null,
-        status: null
+        status: null,
+        user: null
         }
     },
     async created() {
 
       this.socket = io("http://localhost:8082");
 
+      this.user = JSON.parse(sessionStorage.getItem("user"));
+
 
       this.socket.emit("client:room", this.$route.params);
 
       let id = this.$route.params.id;
-      let issueObject = await fetch(`http://localhost:8082/issue/${id}`);
+      let issueObject = await fetch(`http://localhost:8082/issue/${id}`, {
+        headers : {
+          token : this.user.token
+        }
+      });
       issueObject = await issueObject.json();
 
       this.tableData = issueObject.data.members;
@@ -116,17 +123,18 @@ export default {
       async submit() {
 
         let id = this.$route.params.id;
-        let data = JSON.parse(sessionStorage.getItem("user"));
+        //let data = JSON.parse(sessionStorage.getItem("user"));
 
 
         let objecto = {
           status : "voting",
-          rol : data.rol
+          rol : this.user.rol
         }
 
         let issueObject = await fetch(`http://localhost:8082/issue/${id}/vote`, {
           method: "POST",
           headers: {
+            token : this.user.token,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -140,12 +148,13 @@ export default {
       },
       async removeRoom() {
         let id = this.$route.params.id;
-        let data = JSON.parse(sessionStorage.getItem("user"));
+        let data = this.user;
 
         
         let response = await fetch(`http://localhost:8082/issue/${id}/delete`, {
           method: "DELETE",
           headers: {
+            token : this.user.token,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -161,17 +170,17 @@ export default {
 
           this.$router.push({name: 'Home'});
 
-
         }
       },
       async restarRoom() {
         let id = this.$route.params.id;
-        let data = JSON.parse(sessionStorage.getItem("user"));
+        let data = this.user
 
         
         let response = await fetch(`http://localhost:8082/issue/${id}/restar`, {
           method: "PUT",
           headers: {
+            token : this.user.token,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },

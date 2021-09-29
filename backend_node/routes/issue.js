@@ -1,14 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const {issueJoin, issuePrueba, getIssue, issueVote, restarIssue,deleteIssue} = require("../controllers/issueController");
+const tokenCheck = require('../middlewares/authToken');
+
 
 
 router.get("/prueba", issuePrueba);
-router.get("/:id", getIssue);
-router.post('/:issue/join',issueJoin);
-router.post("/:issue/vote", issueVote);
+router.get("/:issue", tokenCheck, getIssue);
+router.post('/:issue/join', issueJoin);
+router.post("/:issue/vote", tokenCheck, issueVote);
 router.put("/:issue/restar", restarIssue);
-router.delete("/:issue/delete", deleteIssue);
+router.delete("/:issue/delete", tokenCheck, deleteIssue);
 
 
 module.exports = router;
