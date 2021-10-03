@@ -14,10 +14,13 @@ import Seleccion from "@/components/Seleccion.vue"
 
 
 
+
+
 export default {
   name: 'Home',
   components: {
-   Seleccion
+   Seleccion 
+  
    
   },
   data () {
@@ -30,14 +33,16 @@ export default {
 
 <style>
 
+
 body {
+
   
   box-sizing: border-box;
-  margin: 0;
+  margin: 0;  
   background:#101014;
   text-align: center;
 }
-
+/*
 
 #logo {
   margin: auto;
@@ -111,5 +116,5 @@ body {
   width: 75px;
   text-align: center;
 }
-  
+  */
 </style>

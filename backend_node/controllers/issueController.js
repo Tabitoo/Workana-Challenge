@@ -87,7 +87,12 @@ module.exports = {
                     })
                 }
 
-                return await res.status(200).json({data : user, token : token});
+                return await res.status(200).json({
+                    status : 200,
+                    msg : "OK",
+                    data : user, 
+                    token : token
+                });
             } catch (error) {
                 console.log(error)
             }
@@ -181,13 +186,21 @@ module.exports = {
                     issueObject = JSON.parse(issueObject);
 
                     if(body.rol === "scrumMaster") {
-                            
-                        issueObject.status = body.status;
+
+                        switch (true) {
+                            case issueObject.status == body.status:
+                                issueObject.status = "joining"
+                                break;
+                        
+                            case issueObject.status != body.status:
+                                issueObject.status = body.status;
+                                break;
+                        }
 
                         vef = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
 
                         if(vef == "OK") {
-   
+
                             if(getSocket()) {
 
                                 getIo().to(Number(id)).emit("server:issueStatus", issueObject.status);
@@ -202,7 +215,7 @@ module.exports = {
 
                         let index = issueObject.members.findIndex(usuario => usuario.id == user.id);
 
-                        issueObject.members[index] = user;
+                        issueObject.members[index].vote = user.vote;
 
                         vef = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
 
@@ -215,8 +228,6 @@ module.exports = {
                             }
 
                         }
-
-
 
                     }
                 }

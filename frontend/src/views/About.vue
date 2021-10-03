@@ -3,7 +3,7 @@
 
     <h1>Poker Planning About</h1>
     <playerlist  v-if="rol == 'scrumMaster'"/>
-    <lobby  v-else/>
+    <lobby2  v-else/>
     
 
     
@@ -13,8 +13,9 @@
 
 <script>
 
-import Lobby from "../components/Lobby.vue"
+//import Lobby from "../components/Lobby.vue"
 import Playerlist from "../components/Playerlist.vue"
+import Lobby2 from "../components/Lobby2.vue"
 
 //import io from 'socket.io-client'
 
@@ -23,7 +24,7 @@ import Playerlist from "../components/Playerlist.vue"
 export default {
   name: 'About',
   components: {
-    Lobby,
+    Lobby2,
     Playerlist
   },
   data () {

@@ -1,57 +1,43 @@
 <template>
-  <div id="container">
-    <h2>Sala Estatus : {{ status }}</h2>
-    <div class="vote">
-      <ul id="voteList">
-        <li v-for="vote in validVotes"
-            :key="vote"
-            :class="{voted: you.vote === vote}"
-            @click="emitVote(vote)">{{vote}}</li>
-      </ul>
-    </div>
-    <div class="members">
-      <h3>
-        Voting issue #<input id="issue" type="number" v-model="issue" /> • Connected {{members.length}}
-      </h3>
-      <h2 v-if="errorMessage"> {{ message }}</h2>
-      <ul id="memberList">
-        <li :key="index" v-for="(member, index) in members">
-          <div class="status">{{member.rol ? '✅' : ''}}</div>
-          <div class="name">{{member.name}}</div>
-          <div class="vote">{{member.vote ? member.vote : '-'}}</div>
-        </li>
-      </ul>
-    </div>
+    <div class="container">
+        <h2>Sala Estatus : {{ status }}</h2>
+        <div class="numbers">
+            <ul class="numbers-list">
+                <li v-for="vote in votes" :key="vote"
+                :class="{voted: user.vote == vote}"
+                @click="emitVote(vote)">{{vote}}</li>
+                
+            </ul>
+        </div>
+        <div class="users">
+            <h3>Voting issue: {{issue.id}}</h3>
+            <p v-if="errorMessage"> {{ message }}</p>
 
-    <p>🎹 entra aca for instructions at <a href="https://github.com/workana/hiring_challenge">Workana Hiring Challenge</a>.</p>
-    <hr />
-<pre style="text-align: left;">
-        <strong>PHP res:</strong>
-        {{responsesDemo.php}}
+            <ul class="memberList">
+                <li v-for="(member, index) in members" :key="index">
+                    <div class="rol">{{member.rol}}</div>
+                    <div class="nombre">{{member.name}}</div>
+                    <div class="voto">{{member.vote ? member.vote : "-"}}</div>
+                </li>
+            </ul>
 
-        <strong>Node res:</strong>
-        {{responsesDemo.node}}
-</pre>
-  
-  </div>
-   
+
+        </div>
+        
+    </div>
 </template>
 
-<script> 
+<script>
 
 import io from 'socket.io-client'
 
 export default {
-  name: 'Lobby',
-  data() {
+    name: "Lobby2",
+    data() {
     return {
       issue: null,
-      validVotes: [1,2,3,5,8,13,20,40,'?'],
+      votes: [1,2,3,5,8,13,20,40,'?'],
       members: [],
-      responsesDemo: {
-        php: null,
-        node: null,
-      },
       socket: null,
       user: null,
       status: null,
@@ -59,11 +45,7 @@ export default {
       message: ""
     };
   },
-  computed: {
-    you() { return this.user },
-  },
   async created() {
-
     this.issue = this.$route.params
 
     this.socket = io("http://localhost:8082");
@@ -102,7 +84,7 @@ export default {
       this.members.unshift(this.user);
 
     }
-
+    
   },
   async mounted() {
 
@@ -166,25 +148,26 @@ export default {
 
     })
 
-    this.demoResponses();
-    
+
   },
   methods: {
     async emitVote(vote) {
+
+      console.log(vote);
 
       let id = this.$route.params.id;
 
       if (this.status == "voting") {
         try {
         
-          if (this.you.vote != false) {
+          if (this.user.vote != false) {
 
             this.errorMessage = true;
             this.message = "Ya votaste una vez, imposible cambiar el valor"
             
             return;
           }
-          this.you.vote = vote;
+          this.user.vote = vote;
 
         
           let objecto = {
@@ -235,14 +218,69 @@ export default {
 
      
     },
-    async demoResponses() {
-      /*const resPhp = await fetch('http://localhost:8081/issue/232');
-      this.responsesDemo.php = JSON.stringify(await resPhp.json());*/
-    }
+    
   }
 }
 </script>
 
+
+
 <style scoped>
+
+div.container {
+    max-width: 550px;
+    margin: auto;
+}
+
+div.numbers {
+    text-align: center;
+}
+
+
+ul.numbers-list {
+    display: flex;
+    list-style: none;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    padding: 0;
+}
+
+ul.numbers-list li {
+    box-sizing: border-box;
+    height: 100px;
+    width: 100px;
+    margin: 10px;
+    padding: 30px;
+    background: #16171d;
+    font-size: 30px;
+    border-radius: 10px;
+    color: #ffff;
+}
+
+
+ul.numbers-list {
+    list-style: none;
+}
+
+ul.numbers-list li.voted {
+  background: #9ba0b3;
+}
+
+ul.memberList li {
+    display: flex;
+    align-content: center;
+    background: #16171d;
+    padding: 16px;
+    margin: 10px 0;
+
+}
+
+ul.memberList li div {
+    width: 50%;
+    display: block;
+    margin: auto;
+    color: #ffff;
+}
+
 
 </style>

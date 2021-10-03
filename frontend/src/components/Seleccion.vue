@@ -3,32 +3,33 @@
         <el-container>
             <el-main>
                 <el-row :gutter="20">
-                <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
-                <el-col :span="12">
-                    <div class="grid-content-1">
-                        <article class="title">
-                            <h2>Seleccione un rol y unase a una sala</h2>
-                        </article>
-                        <h2 v-if="errorMessage"> {{ message }}</h2>
-                        <form action="" class="formulario" >
-                            <el-input placeholder="Nombre" v-model="input" size="medium"></el-input>
-                            <el-select v-model="rol">
-                                <el-option popper-class="fondo"
-                                v-for="item in options"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        
-                            <el-input-number v-model="num" @change="handleChange" :min="1" popper-class="fondo"></el-input-number>
-
-                            <el-button size="medium" @click.prevent="onSubmit">Enviar</el-button>
+                    <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+                    <el-col :span="12">
+                        <div class="grid-content-1">
+                            <article class="title">
+                                <h2>Seleccione un rol y unase a una sala</h2>
+                            </article>
+                            <h2 v-if="errorMessage"> {{ message }}</h2>
+                            <form action="" class="formulario" >
+                                <el-input placeholder="Nombre" v-model="input" size="medium"></el-input>
+                                <el-select v-model="rol">
+                                    <el-option popper-class="fondo"
+                                    v-for="item in options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value">
+                                    </el-option>
+                                </el-select>
                             
-                        </form>
-                    </div>
-                </el-col>
-                <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+                                <el-input-number v-model="num" @change="handleChange" :min="1" popper-class="fondo"></el-input-number>
+
+                                
+                                <el-button  @click.prevent="onSubmit">Enviar</el-button>
+                                
+                            </form>
+                        </div>
+                    </el-col>
+                    <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
                 </el-row>                
             </el-main>
         </el-container>    
@@ -105,16 +106,14 @@ export default {
                 console.log(response)
 
 
-                if(response.status === "error"){
+                if(response.status > 299){
 
                     this.errorMessage = true;
-                    this.message = response.data
+                    this.message = response.msg
                     return
 
                 } else {
                         
-                    
-                    
                     let user = response.data;
 
                     user["token"] = response.token;
@@ -153,17 +152,28 @@ h1,h2 {
     
 }
 
+.el-button {
+    margin-top: 0;
+}
+
+
 .formulario el-select {
     padding: 20px;
 }
 
+
 .el-row {
     margin-bottom: 20px;
+} 
+
+.el-input--medium {
+    margin: 20px;
 }
 
 .el-col {
     border-radius: 4px;
 }
+
 
 .grid-content {
     border-radius: 4px;
@@ -171,6 +181,7 @@ h1,h2 {
 }
 
 
+ 
 .grid-content-1 {
     display: flex;
     justify-content: center;

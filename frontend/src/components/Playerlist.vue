@@ -2,7 +2,9 @@
     <div id="Playerlist">
         <el-container>
             <el-main>
+                <h2>Sala Estatus : {{ status }}</h2>
                 <el-row>
+                    <h2 v-if="errorMessage"> {{ message }}</h2>
                     <el-col :span="4"><div class="grid-content"></div></el-col>
                     <el-col :span="16">
                         <el-table
@@ -11,7 +13,7 @@
                         style="width: 100%">
                         <el-table-column
                         prop="id"
-                        label="Fecha"
+                        label="Id"
                         width="180">
                         </el-table-column>
                         <el-table-column
@@ -21,15 +23,15 @@
                         </el-table-column>
                         <el-table-column
                         prop="rol"
-                        label="Dirección">
+                        label="Rol">
                         </el-table-column>
                         <el-table-column
                         prop="vote"
                         label="Voto">
                         </el-table-column>
                     </el-table>
-                    <el-button size="medium" @click="submit">Cerrar sala e inicar votos</el-button>
-                    <el-button size="medium" @click="removeRoom">Eliminar sala y volver a la pagina principal</el-button>
+                    <el-button size="medium" @click="submit">{{ buttonText }}</el-button>
+                    <el-button size="medium" @click="removeRoom">Eliminar sala</el-button>
                     <el-button size="medium" @click="restarRoom">Restar Votos</el-button>
 
                     </el-col>
@@ -56,7 +58,10 @@ export default {
         tableData: [],
         socket : null,
         status: null,
-        user: null
+        user: null,
+        errorMessage: false,
+        message: "",
+        buttonText : "Cerrar sala e inicar votos"
         }
     },
     async created() {
@@ -76,7 +81,22 @@ export default {
       });
       issueObject = await issueObject.json();
 
-      this.tableData = issueObject.data.members;
+      if(issueObject.status > 299){
+
+        console.log(issueObject)
+
+        this.errorMessage = true;
+        this.message = "Ha ocurrido un error, vuelva a conectarse";
+
+      } else {
+
+        this.status = issueObject.data.status;
+
+        this.tableData = issueObject.data.members;
+
+
+      }
+
 
     },
     async mounted() {
@@ -151,12 +171,36 @@ export default {
           body : JSON.stringify(objecto)
         })
         issueObject = await issueObject.json();
-        this.status = issueObject.data.status;
-        console.log(issueObject);
-        console.log(this.status);
+
+        if(issueObject.status > 299) {
+
+          console.log(issueObject)
+
+          this.errorMessage = true;
+          this.message = "Ha ocurrido un error al cambiar el estado de la sala";
+          return
+
+
+        } else {
+
+          this.errorMessage = false;
+            
+          this.status = issueObject.data.status;
+          if(this.status == "voting") {
+            this.buttonText = "Abrir Sala"
+          } else {
+            this.buttonText = "Cerrar sala e inicar votos"
+          }
+          console.log(issueObject);
+          console.log(this.status);
+
+        }
+
+
 
       },
       async removeRoom() {
+
         let id = this.$route.params.id;
         let data = this.user;
 
@@ -172,8 +216,17 @@ export default {
         })
         response = await response.json();
 
-        if(response.data == "ok"){
 
+
+        if(response.status > 299){
+          console.log(response)
+
+          this.errorMessage = true;
+          this.message = "Ha ocurrido un error al eliminar la sala";
+          return
+
+        } else {
+          
           this.socket.disconnect();
 
           console.log(response);
@@ -198,7 +251,19 @@ export default {
         })
         response = await response.json();
 
-        console.log(response);
+        if(response.status > 299){
+          console.log(response)
+
+          this.errorMessage = true;
+          this.message = "Ha ocurrido un error al reiniciar la sala";
+          return
+
+        } else {
+          this.errorMessage = false;
+          console.log(response);
+        }
+
+        
 
       }
     }

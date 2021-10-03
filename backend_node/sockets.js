@@ -42,19 +42,17 @@ const connect = (server) => {
 
                     issueObject = JSON.parse(issueObject);
 
-                    user["socket"] = newSocket.id;
+                    
 
                     let index = issueObject.members.findIndex(member => member.id == user.id);
 
-                    issueObject.members[index] = user;
+                    issueObject.members[index]["socket"] = newSocket.id;
 
                     await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
 
                     console.log("------");
                     console.log("socket conectado a estos rooms desde sockets.js:", socket.rooms);
                     console.log("------");
-                    
-                    //room = io.to(data.id);
                     
 
                     io.to(data.id).emit("server:msg", `mensaje desde el room:${data.id}`);
