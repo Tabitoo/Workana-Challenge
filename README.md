@@ -209,6 +209,12 @@ Response para el votante
 
 Method : PUT
 
+
+```
+http://localhost:8082/issue/numberIssue/restart
+
+```
+
 ### Body
 
 ```
@@ -255,6 +261,12 @@ Method : PUT
 ### Eliminate Issue
 
 Method : DELETE
+
+
+```
+http://localhost:8082/issue/numberIssue/delete
+
+```
 
 ### Body
 
