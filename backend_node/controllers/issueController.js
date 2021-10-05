@@ -1,7 +1,8 @@
-
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const {getSocket,getIo, getRoom} = require('../sockets');
-const {getRedis} = require('../redis')
+const {getRedis} = require('../redis');
+
 
 module.exports = {
     issueJoin : (req,res) => {
@@ -31,7 +32,7 @@ module.exports = {
 
                     vef = await getRedis().set("issue:" + id, JSON.stringify(issueObject));
 
-                    token = jwt.sign({id : issueObject.members[0].id}, "MySecret", {expiresIn : 60 * 60 * 24});
+                    token = jwt.sign({id : issueObject.members[0].id}, process.env.TOKEN_SECRET_WORD, {expiresIn : 60 * 60 * 24});
 
                     
                 }else {
@@ -71,8 +72,10 @@ module.exports = {
 
                     vef = await getRedis().set("issue:" + id, JSON.stringify(issueObject));
 
+                    let secretKey = process.env.TOKEN_SECRET_WORD
+
                     //Genera un nuevo token para futuras peticiones
-                    token = jwt.sign({id : user.id}, "MySecret", {expiresIn : 60 * 60 * 24});
+                    token = jwt.sign({id : user.id}, secretKey, {expiresIn : 60 * 60 * 24});
 
 
                 }
@@ -183,8 +186,20 @@ module.exports = {
                 } else {
                     
                     issueObject = JSON.parse(issueObject);
+                    let user = issueObject.members.find(member => member.id == body.idUser);
 
-                    if(body.rol === "scrumMaster") {
+                        
+                    if (user == undefined) {
+                        console.log("No se encontro el usuario:", user)
+
+                        return res.status(404).json({
+                            status : 404,
+                            error : "Not Found",
+                            msg : "El servidor no pudo encontrar el contenido solicitado"
+                        })
+                    }
+
+                    if(user.rol === "scrumMaster") {
                         //actualiza el estatus del issueObject
                         switch (true) {
                             case issueObject.status == body.status:
@@ -213,11 +228,32 @@ module.exports = {
 
                         //Almacena el voto del usuario en redis
 
-                        let user = body.user;
+                        
+                        let validVotes = [1,2,3,5,8,13,20,40,'?']
 
                         let index = issueObject.members.findIndex(usuario => usuario.id == user.id);
+                        let vote = validVotes.find(voto => voto == body.vote)
 
-                        issueObject.members[index].vote = user.vote;
+                        if(vote == undefined){
+
+                            return res.status(404).json({
+                                status : 404,
+                                error : "Not Found",
+                                msg : "Voto incorrecto"
+                            })
+
+                        } else if (issueObject.status != "voting") {
+                            return res.status(403).json({
+                                status : 403,
+                                error : "forbidden",
+                                msg : "El status de la sala no es voting"
+                            })
+                            
+                        }
+
+
+
+                        issueObject.members[index].vote = body.vote;
                         issueObject.members[index].status = "voted"
 
                         vef = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
@@ -260,7 +296,7 @@ module.exports = {
         issueStatus(id,body);
 
     },
-    restarIssue : (req, res) => {
+    restartIssue : (req, res) => {
 
         let issue = req.params.issue;
         let body = req.body;
@@ -273,7 +309,7 @@ module.exports = {
             })
         }
 
-        let restarVote = async (id, body) => {
+        let restartVote = async (id, body) => {
 
 
             let issueObject = await getRedis().get(`issue:${id}`);
@@ -288,44 +324,58 @@ module.exports = {
 
             } else {
 
-                //Reinicia los votos delos usuarios
+                //Reinicia los votos de los usuarios
 
                 issueObject = JSON.parse(issueObject);
 
-                issueObject.members.forEach(member => {
-    
-                    member.vote = false;
-                    member.status = "joined"
-                    
-                });
-    
-                let response = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
-    
-                if(response != "OK") {
+                let scrumMaster = issueObject.members.find(user => user.id == body.idUser);
 
-                    console.log("error al almacenar issue:", vef)
+                if(scrumMaster != undefined && scrumMaster.rol == "scrumMaster"){
 
-                    return res.status(404).json({
-                        status : 404,
-                        error : "Not Found",
-                        msg : "El servidor no pudo encontrar el contenido solicitado"
+                    issueObject.members.forEach(member => {
+    
+                        member.vote = false;
+                        member.status = "joined"
+                        
+                    });
+        
+                    let response = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
+        
+                    if(response != "OK") {
+    
+                        console.log("error al almacenar issue:", vef)
+    
+                        return res.status(404).json({
+                            status : 404,
+                            error : "Not Found",
+                            msg : "El servidor no pudo encontrar el contenido solicitado"
+                        })
+                        
+                    } 
+    
+                    //Envia el array de members con los votos reiniciados
+                    getIo().to(Number(id)).emit("server:restarIssue", issueObject.members);
+    
+                    return res.json({
+                        status : 200,
+                        msg : "OK",
+                        data : issueObject
                     })
-                    
-                } 
 
-                //Envia el array de members con los votos reiniciados
-                getIo().to(Number(id)).emit("server:restarIssue", issueObject.members);
 
-                return res.json({
-                    status : 200,
-                    data : "ok"
+
+                }
+
+                return res.status(403).json({
+                    status : 403,
+                    error : "forbidden",
+                    msg : "Solo el scrumMaster puede cambiar la sala"
                 })
-
             }
 
         }
 
-        restarVote(issue,body);
+        restartVote(issue,body);
 
     },
 
@@ -360,9 +410,9 @@ module.exports = {
                         
                     issueObject = JSON.parse(issueObject);
 
-                    let user = issueObject.members.find(user => user.id == body.id);
+                    let user = issueObject.members.find(user => user.id == body.idUser);
 
-                    if(user.rol == "scrumMaster"){
+                    if(user != undefined && user.rol == "scrumMaster"){
 
                         let remove = await getRedis().del(`issue:${issue}`);
 

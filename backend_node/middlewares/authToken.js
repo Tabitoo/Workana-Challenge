@@ -1,11 +1,13 @@
 const { json } = require("body-parser");
 const jwt = require("jsonwebtoken");
 const {getRedis} = require('../redis');
+require("dotenv").config();
+
 
 module.exports = async (req,res,next) => {
     
     const token = req.headers['token'];
-    
+    let secretKey = process.env.TOKEN_SECRET_WORD
     if(!token){
 
         return res.json({
@@ -18,7 +20,9 @@ module.exports = async (req,res,next) => {
 
     try {
 
-        const verifyToken = jwt.verify(token,"MySecret");
+        
+
+        const verifyToken = jwt.verify(token,secretKey);
 
         let issueObject = await getRedis().get(`issue:${req.params.issue}`);
 

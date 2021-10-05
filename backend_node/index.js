@@ -9,17 +9,8 @@ var app = express();
 var server = http.createServer(app);
 
 require("./sockets").connect(server);
-/*
-const io = require("socket.io")(server, {
-    cors: {
-        origin: true,
-        methods: ["GET", "POST"]
-    }
-});*/
-
 
 let issueRouter = require("./routes/issue");
-
 
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());

@@ -21,20 +21,11 @@ const connect = (server) => {
         
         console.log("New socket connected: ", socket.id);
 
-/*
-        newSocket.on("client:vote", (data) => {
-            console.log("rooms:", newSocket.rooms)
-            console.log(data)
-        })
-*/
+
         //Une el socket del usuario a un room igual al id del issue
         newSocket.on("client:room", async (data, user) => {
             try {
-                /*
-                console.log("user desde client:room")
-                console.log("------")
-                console.log(user)
-                console.log("------")*/
+                
                 newSocket.join(data.id);
                 id = data.id;
 

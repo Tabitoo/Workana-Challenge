@@ -103,7 +103,7 @@ export default {
 
                 response = await response.json();
 
-                console.log(response)
+                
 
 
                 if(response.status > 299){

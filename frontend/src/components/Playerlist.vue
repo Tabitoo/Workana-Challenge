@@ -32,7 +32,7 @@
                     </el-table>
                     <el-button size="medium" @click="submit">{{ buttonText }}</el-button>
                     <el-button size="medium" @click="removeRoom">Eliminar sala</el-button>
-                    <el-button size="medium" @click="restarRoom">Reiniciar Votos</el-button>
+                    <el-button size="medium" @click="restartRoom">Reiniciar Votos</el-button>
 
                     </el-col>
                     <el-col :span="4"><div class="grid-content"></div></el-col>
@@ -99,8 +99,7 @@ export default {
     },
     async mounted() {
       this.socket.on("server:issue", (data) => {
-        console.log("data de server:issue");
-        console.log(data)
+        
         this.tableData.push(data.members[data.members.length - 1]);
       });
 
@@ -136,7 +135,6 @@ export default {
 
       })
 
-        
       this.socket.on("server:exitUser", (data) => {
 
         let index = this.tableData.findIndex(member => member.id == data);
@@ -152,12 +150,10 @@ export default {
       async submit() {
 
         let id = this.$route.params.id;
-        //let data = JSON.parse(sessionStorage.getItem("user"));
-
-
+       
         let objeto = {
           status : "voting",
-          rol : this.user.rol
+          idUser : this.user.id
         }
 
         let issueObject = await fetch(`http://localhost:8082/issue/${id}/vote`, {
@@ -202,7 +198,9 @@ export default {
       async removeRoom() {
 
         let id = this.$route.params.id;
-        let data = this.user;
+        let data = {
+          idUser : this.user.id
+        };
 
         
         let response = await fetch(`http://localhost:8082/issue/${id}/delete`, {
@@ -229,19 +227,21 @@ export default {
           
           this.socket.disconnect();
 
-          console.log(response);
+         
 
           this.$router.push({name: 'Home'});
 
         }
       },
       //reinicia los votos de los usuarios
-      async restarRoom() {
+      async restartRoom() {
         let id = this.$route.params.id;
-        let data = this.user
+        let data = {
+          idUser : this.user.id
+          }
 
         
-        let response = await fetch(`http://localhost:8082/issue/${id}/restar`, {
+        let response = await fetch(`http://localhost:8082/issue/${id}/restart`, {
           method: "PUT",
           headers: {
             token : this.user.token,
@@ -260,11 +260,10 @@ export default {
           return
 
         } else {
-          this.errorMessage = false;
-          console.log(response);
-        }
 
-        
+          this.errorMessage = false;
+         
+        }
 
       }
     }
