@@ -11,7 +11,7 @@
         </div>
         <div class="users">
             <h3>Voting issue: {{issue.id}}</h3>
-            <p v-if="errorMessage"> {{ message }}</p>
+            <p v-if="errorMessage" id="errorMessage"> {{ message }}</p>
 
             <ul class="memberList">
                 <li v-for="(member, index) in members" :key="index">
@@ -73,11 +73,15 @@ export default {
       
     } else {
 
+
+
       this.members = issueObject.data.members;
 
       this.status = issueObject.data.status;
 
-      this.user.name = this.user.name + " (you)";
+      //this.user.name = this.user.name + " (you)";
+
+      //Coloca el usuario al principio del array
 
       this.members.pop();
 
@@ -88,12 +92,14 @@ export default {
   },
   async mounted() {
 
+    //Hace un push a members agregando a los nuevos usuarios que se conectan a la sala
     this.socket.on("server:issue", (data) => {
-      console.log("Hola esta es la data de server:issue");
+      console.log("Data de server:issue");
       console.log(data)
       this.members.push(data.members[data.members.length - 1]);
     });
 
+    //Actualiza el estado de la sala
     this.socket.on("server:issueStatus", (data) => {
       this.status = data;
       this.errorMessage = false
@@ -101,6 +107,8 @@ export default {
 
     })
 
+    //Cada vez que se emite el evento verifica que todos usuarios excepto el scrumMaster 
+    //hayan votado para mostrar los votos
     this.socket.on("server:issueVote", (data) => {
       let i = 0;
       data.forEach(member => {
@@ -123,6 +131,7 @@ export default {
 
     })
 
+    //Reinicia los votos de los usuarios
     this.socket.on("server:restarIssue", (data) => {
   
         data.forEach(member => {
@@ -133,12 +142,14 @@ export default {
 
     })
 
+    //Desconecta el usuario y lo redirecciona al home
     this.socket.on("client:disconnect", () => {
       this.socket.disconnect();
 
       this.$router.push({name: 'Home'});
     })
 
+    //Se actualiza el array de members cuando se desconecta un usuario
     this.socket.on("server:exitUser", (data) => {
 
       let index = this.members.findIndex(member => member.id == data);
@@ -167,10 +178,11 @@ export default {
             
             return;
           }
+
           this.user.vote = vote;
 
         
-          let objecto = {
+          let objeto = {
             rol : this.user.rol,
             user: this.user,
             
@@ -183,7 +195,7 @@ export default {
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
-            body : JSON.stringify(objecto)
+            body : JSON.stringify(objeto)
           })
 
           response = await response.json();
@@ -198,10 +210,9 @@ export default {
             return
 
           }else {
+            //Establece el valor en false en caso de que haya intentado votar cuando el status no era "voting"
             this.errorMessage = false;
           }
-
-          
           
         } catch (error) {
           console.log(error)
@@ -280,6 +291,10 @@ ul.memberList li div {
     display: block;
     margin: auto;
     color: #ffff;
+}
+
+#errorMessage {
+  color: #ffff;
 }
 
 

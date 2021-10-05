@@ -8,17 +8,18 @@ module.exports = {
 
         let issue = req.params.issue;
         
-        let coso = async (id,body) => {
+        let joining = async (id,body) => {
             try {
 
                 let issueObject = await getRedis().get("issue:" + id);
+
                 let token;
                 let user;
                 let vef;
                 
                 if(issueObject == null){
 
-                    user =  {name : body.name, rol : body.rol, status : "joining", id: 1, vote: false}
+                    user =  {name : body.name, rol : body.rol, status : "joined", id: 1, vote: false}
 
                     issueObject = {
                         id: id,
@@ -32,7 +33,6 @@ module.exports = {
 
                     token = jwt.sign({id : issueObject.members[0].id}, "MySecret", {expiresIn : 60 * 60 * 24});
 
-                    //return await res.status(200).json({data : issueObject, token : token});
                     
                 }else {
 
@@ -62,7 +62,7 @@ module.exports = {
 
                         name : body.name, 
                         rol : body.rol, 
-                        status : "joining", 
+                        status : "joined", 
                         id: issueObject.members.length + 1, 
                         vote: false
                     }
@@ -71,9 +71,9 @@ module.exports = {
 
                     vef = await getRedis().set("issue:" + id, JSON.stringify(issueObject));
 
+                    //Genera un nuevo token para futuras peticiones
                     token = jwt.sign({id : user.id}, "MySecret", {expiresIn : 60 * 60 * 24});
 
-                    //return res.json({data : issueObject, token : token});
 
                 }
 
@@ -99,7 +99,7 @@ module.exports = {
 
         }
 
-        coso(issue,req.body);
+        joining(issue,req.body);
         
     },
     getIssue: (req,res) => {
@@ -125,9 +125,10 @@ module.exports = {
 
                     if(getSocket()){
                         
-                        console.log("evento desde client:issue")
-                        getIo().emit("server:msg","esto es un mensaje, que ande porfavor!!");
+
                         getSocket().on("client:mensaje", (data) => console.log(data))
+
+                        //Envia el issueObject con el array de members actualizada
                         getIo().to(Number(id)).emit("server:issue", issueObject);
                         
                     }
@@ -186,7 +187,7 @@ module.exports = {
                     issueObject = JSON.parse(issueObject);
 
                     if(body.rol === "scrumMaster") {
-
+                        //actualiza el estatus del issueObject
                         switch (true) {
                             case issueObject.status == body.status:
                                 issueObject.status = "joining"
@@ -211,18 +212,22 @@ module.exports = {
 
 
                     } else {
+
+                        //Almacena el voto del usuario en redis
+
                         let user = body.user;
 
                         let index = issueObject.members.findIndex(usuario => usuario.id == user.id);
 
                         issueObject.members[index].vote = user.vote;
+                        issueObject.members[index].status = "voted"
 
                         vef = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
 
                         if(vef == "OK"){
    
                             if(getSocket()) {
-
+                                //Envia el array de members con los votos actualizados
                                 getIo().to(Number(id)).emit("server:issueVote", issueObject.members);
 
                             }
@@ -286,11 +291,14 @@ module.exports = {
 
             } else {
 
+                //Reinicia los votos delos usuarios
+
                 issueObject = JSON.parse(issueObject);
 
                 issueObject.members.forEach(member => {
     
                     member.vote = false;
+                    member.status = "joined"
                     
                 });
     
@@ -308,6 +316,7 @@ module.exports = {
                     
                 } 
 
+                //Envia el array de members con los votos reiniciados
                 getIo().to(Number(id)).emit("server:restarIssue", issueObject.members);
 
                 return res.json({
@@ -362,6 +371,7 @@ module.exports = {
 
                         if(remove != 0){
 
+                            //Evento para desconectar los sockets de los usuarios
                             getIo().to(Number(issue)).emit("client:disconnect");
 
                             return res.status(200).json({

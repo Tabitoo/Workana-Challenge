@@ -21,21 +21,25 @@ const connect = (server) => {
         
         console.log("New socket connected: ", socket.id);
 
-
+/*
         newSocket.on("client:vote", (data) => {
             console.log("rooms:", newSocket.rooms)
             console.log(data)
         })
-
+*/
+        //Une el socket del usuario a un room igual al id del issue
         newSocket.on("client:room", async (data, user) => {
             try {
-
+                /*
                 console.log("user desde client:room")
                 console.log("------")
                 console.log(user)
-                console.log("------")
+                console.log("------")*/
                 newSocket.join(data.id);
                 id = data.id;
+
+
+                //Almacena el socket del usuario en el array de members con su respectivo indice
 
                 let issueObject = await getRedis().get(`issue:${id}`);
                 if (issueObject != null) {
@@ -43,12 +47,17 @@ const connect = (server) => {
                     issueObject = JSON.parse(issueObject);
 
                     
-
                     let index = issueObject.members.findIndex(member => member.id == user.id);
 
                     issueObject.members[index]["socket"] = newSocket.id;
 
-                    await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
+                    let response = await getRedis().set(`issue:${id}`, JSON.stringify(issueObject));
+
+                    if(response != "OK"){
+
+                        console.log("error al almacenar issue:", response);
+
+                    }
 
                     console.log("------");
                     console.log("socket conectado a estos rooms desde sockets.js:", socket.rooms);
@@ -57,7 +66,7 @@ const connect = (server) => {
 
                     io.to(data.id).emit("server:msg", `mensaje desde el room:${data.id}`);
                     
-                        
+                
                 }
                 
             } catch (error) {
@@ -66,11 +75,11 @@ const connect = (server) => {
             
         })
 
-
         newSocket.on("disconnecting", async (reason) => {
 
             if(reason === "transport close"){
-
+                //Cuando un usuario pierde la conexion es eliminado del array members
+                //y se emite un evento actualizando la lista de jugadores para los demas usuarios
                 try {
                         
                     for (const room of newSocket.rooms) {

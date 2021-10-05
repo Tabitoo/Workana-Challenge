@@ -32,7 +32,7 @@
                     </el-table>
                     <el-button size="medium" @click="submit">{{ buttonText }}</el-button>
                     <el-button size="medium" @click="removeRoom">Eliminar sala</el-button>
-                    <el-button size="medium" @click="restarRoom">Restar Votos</el-button>
+                    <el-button size="medium" @click="restarRoom">Reiniciar Votos</el-button>
 
                     </el-col>
                     <el-col :span="4"><div class="grid-content"></div></el-col>
@@ -70,7 +70,6 @@ export default {
 
       this.user = JSON.parse(sessionStorage.getItem("user"));
 
-
       this.socket.emit("client:room", this.$route.params, this.user);
 
       let id = this.$route.params.id;
@@ -97,11 +96,10 @@ export default {
 
       }
 
-
     },
     async mounted() {
       this.socket.on("server:issue", (data) => {
-        console.log("Hola esta es la data de server:issue");
+        console.log("data de server:issue");
         console.log(data)
         this.tableData.push(data.members[data.members.length - 1]);
       });
@@ -150,13 +148,14 @@ export default {
 
     },
     methods: {
+      //Metodo que cambia el estado de la sala
       async submit() {
 
         let id = this.$route.params.id;
         //let data = JSON.parse(sessionStorage.getItem("user"));
 
 
-        let objecto = {
+        let objeto = {
           status : "voting",
           rol : this.user.rol
         }
@@ -168,7 +167,7 @@ export default {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-          body : JSON.stringify(objecto)
+          body : JSON.stringify(objeto)
         })
         issueObject = await issueObject.json();
 
@@ -199,6 +198,7 @@ export default {
 
 
       },
+      //Metodo que elimina la sala
       async removeRoom() {
 
         let id = this.$route.params.id;
@@ -235,6 +235,7 @@ export default {
 
         }
       },
+      //reinicia los votos de los usuarios
       async restarRoom() {
         let id = this.$route.params.id;
         let data = this.user

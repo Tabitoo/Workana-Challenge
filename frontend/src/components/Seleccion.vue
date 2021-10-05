@@ -9,7 +9,7 @@
                             <article class="title">
                                 <h2>Seleccione un rol y unase a una sala</h2>
                             </article>
-                            <h2 v-if="errorMessage"> {{ message }}</h2>
+                            <p v-if="errorMessage" id="errorMessage"> {{ message }}</p>
                             <form action="" class="formulario" >
                                 <el-input placeholder="Nombre" v-model="input" size="medium"></el-input>
                                 <el-select v-model="rol">
@@ -63,7 +63,7 @@ export default {
         async onSubmit() {
             try {
                     
-                console.log("Se activo el submit")
+                
                 let objeto = {
                     rol : this.rol,
                     name: this.input,
@@ -115,10 +115,8 @@ export default {
                 } else {
                         
                     let user = response.data;
-
+                    //Se le asigna el token de jwt al objeto del usuario
                     user["token"] = response.token;
-
-                    //console.log(user);
 
                     sessionStorage.setItem(`user`,  JSON.stringify(user));
 
@@ -191,6 +189,10 @@ h1,h2 {
     border-radius: 4px;
     min-height: 36px;
     background-color: #16171d;
+}
+
+#errorMessage {
+    color: #fff;
 }
 
 </style>
