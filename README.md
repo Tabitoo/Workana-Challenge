@@ -7,5 +7,7 @@ El challenge da la posibilidad de trabajar en el back o en el front usando Vue p
 
 ## Como Jugar
 
+La primera vista que tendremos es la que se puede apreciar en la imagen. En esta parte tendremos que poner nuestro nombre, seleccionar un rol (scrum Master o Votante) y poner el numero de la sala a la que queremos unirnos.
+
 
 
