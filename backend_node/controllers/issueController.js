@@ -126,8 +126,6 @@ module.exports = {
                     if(getSocket()){
                         
 
-                        getSocket().on("client:mensaje", (data) => console.log(data))
-
                         //Envia el issueObject con el array de members actualizada
                         getIo().to(Number(id)).emit("server:issue", issueObject);
                         
@@ -277,7 +275,6 @@ module.exports = {
 
         let restarVote = async (id, body) => {
 
-            console.log(body);
 
             let issueObject = await getRedis().get(`issue:${id}`);
 
