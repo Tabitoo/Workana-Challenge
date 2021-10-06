@@ -19,7 +19,7 @@ app.use(cors());
 
 app.use("/issue", issueRouter);
 
-console.log("hola buenas")
+console.log("Servidor iniciado")
 
 server.listen(port)
 
