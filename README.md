@@ -33,23 +33,23 @@ La primera vista que tendremos es la que se puede apreciar en la imagen. En esta
 
 
 
-![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/inicio.png)
+![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/Inicio.png)
 
 En caso de que seamos votantes, podremos ver una lista de numeros para votar y otra lista con los jugadores conectados. No podremos votar hasta que el estatus de sala cambie a "voting".
 
-![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/lobby.png)
+![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/Lobby.png)
 
 En caso de que seamos el Scrum Master, veremos una lista con todos los jugadores conectados junto con tres botones, el primero "Cerrar sala e iniciar votos" sirve para cambiar el estatus de la sala, una vez que el estatus pase a "voting", otros usuarios no podrán conectarse, para eso es necesario abrir la sala. El segundo boton elimina la sala, llevando a la pagina principal a todos los participantes. Y por último el tercer voton reinicia los votos de los demas jugadores.
 
-![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/admin.png)
+![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/Admin.png)
 
 Si un solo jugador vota, el voto solo puede verlo el jugador y no los demas jugadores.
 
-![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/votePlayer.png)
+![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/VotePlayer.png)
 
 Los votos son revelados una vez que todos los votantes hayan votado
 
-![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/votePlayer2.png)
+![image text](https://github.com/Tabitoo/Workana-Challenge/blob/main/images/VotePlayer2.png)
 
 
 ## Endpoints 
