@@ -120,7 +120,7 @@ export default {
 
                     sessionStorage.setItem(`user`,  JSON.stringify(user));
 
-                    this.$router.push({name: 'About', params : {id : this.num}});
+                    this.$router.push({name: 'Room', params : {id : this.num}});
 
                 }
 
