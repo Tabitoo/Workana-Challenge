@@ -5,6 +5,28 @@
 El challenge da la posibilidad de trabajar en el back o en el front usando Vue para el front y PHP, Nodejs o Mocked Service para el back. En este caso se decidio trabajar tanto en el frontend como en el backend, utilizando Vue 2 para el front y Nodejs para el back.
 
 
+## Configuración inicial
+
+Para poder correr el proyecto es necesario tener instalado Docker y Docker Compose, luego en la terminal debe ejecutar el siguiente comando:
+
+```
+docker-compose up
+
+```
+
+También es necesario configurar las variables de entorno en el archivo .env con sus datos
+
+
+```
+/* SECRET WORD TOKEN */
+
+TOKEN_SECRET_WORD="your secret word"
+
+```
+
+
+
+
 ## Como Jugar
 
 La primera vista que tendremos es la que se puede apreciar en la imagen. En esta parte tendremos que poner nuestro nombre, seleccionar un rol (scrum Master o Votante) y poner el numero de la sala a la que queremos unirnos.
