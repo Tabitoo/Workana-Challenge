@@ -1,7 +1,7 @@
 <template>
   <div class="about">
 
-    <h1>Poker Planning About</h1>
+    <h1>Poker Planning</h1>
     <playerlist  v-if="rol == 'scrumMaster'"/>
     <lobby  v-else/>
     
